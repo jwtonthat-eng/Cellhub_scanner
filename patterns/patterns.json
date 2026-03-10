@@ -1,0 +1,234 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "version": "1.0",
+  "bill_types": {
+    "telkom_mobile": {
+      "display_name": "Telkom Mobile Bill",
+      "detection_keywords": ["telkom", "mobile", "telkom mobile", "data usage", "airtime", "telkom sa"],
+      "min_keyword_score": 2,
+      "row_split_pattern": "(?m)^\\s*(\\d{2}[/-]\\d{2}[/-]\\d{4})",
+      "columns": [
+        {
+          "name": "date",
+          "display_name": "Date",
+          "regex": "(\\d{2}[/-]\\d{2}[/-]\\d{4})",
+          "capture_group": 1,
+          "default_value": "",
+          "dtype": "date",
+          "date_format": "%d/%m/%Y",
+          "transform": null,
+          "description": "Transaction date",
+          "example_match": "15/03/2024"
+        },
+        {
+          "name": "description",
+          "display_name": "Description",
+          "regex": "\\d{2}[/-]\\d{2}[/-]\\d{4}\\s+(.+?)\\s{2,}",
+          "capture_group": 1,
+          "default_value": "",
+          "dtype": "str",
+          "date_format": null,
+          "transform": "strip",
+          "description": "Line item description",
+          "example_match": "Monthly Subscription"
+        },
+        {
+          "name": "quantity",
+          "display_name": "Quantity / Duration",
+          "regex": "(?:qty|duration|minutes|mb|gb)?\\s*([\\d,.]+)\\s*(?:min|mb|gb|units?)?",
+          "capture_group": 1,
+          "default_value": "",
+          "dtype": "str",
+          "date_format": null,
+          "transform": "strip",
+          "description": "Call duration, data volume or item quantity",
+          "example_match": "120"
+        },
+        {
+          "name": "amount",
+          "display_name": "Amount (R)",
+          "regex": "R?\\s*([\\d,]+\\.\\d{2})\\s*$",
+          "capture_group": 1,
+          "default_value": "0.00",
+          "dtype": "float",
+          "date_format": null,
+          "transform": "remove_commas",
+          "description": "Rand amount at end of line",
+          "example_match": "129.00"
+        }
+      ],
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "created_by": "manual",
+        "last_modified": "2024-01-01T00:00:00Z",
+        "version": 1,
+        "accuracy_score_on_creation": null
+      }
+    },
+    "vodacom": {
+      "display_name": "Vodacom Bill",
+      "detection_keywords": ["vodacom", "vodacom sa", "data bundle", "airtime", "vodacom group"],
+      "min_keyword_score": 2,
+      "row_split_pattern": "(?m)^\\s*(\\d{2}[/-]\\d{2}[/-]\\d{4})",
+      "columns": [
+        {
+          "name": "date",
+          "display_name": "Date",
+          "regex": "(\\d{2}[/-]\\d{2}[/-]\\d{4})",
+          "capture_group": 1,
+          "default_value": "",
+          "dtype": "date",
+          "date_format": "%d/%m/%Y",
+          "transform": null,
+          "description": "Transaction date",
+          "example_match": "15/03/2024"
+        },
+        {
+          "name": "description",
+          "display_name": "Description",
+          "regex": "\\d{2}[/-]\\d{2}[/-]\\d{4}\\s+(.+?)\\s{2,}",
+          "capture_group": 1,
+          "default_value": "",
+          "dtype": "str",
+          "date_format": null,
+          "transform": "strip",
+          "description": "Line item description",
+          "example_match": "Data Bundle 1GB"
+        },
+        {
+          "name": "amount",
+          "display_name": "Amount (R)",
+          "regex": "R?\\s*([\\d,]+\\.\\d{2})\\s*$",
+          "capture_group": 1,
+          "default_value": "0.00",
+          "dtype": "float",
+          "date_format": null,
+          "transform": "remove_commas",
+          "description": "Rand amount at end of line",
+          "example_match": "149.00"
+        }
+      ],
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "created_by": "manual",
+        "last_modified": "2024-01-01T00:00:00Z",
+        "version": 1,
+        "accuracy_score_on_creation": null
+      }
+    },
+    "mtn": {
+      "display_name": "MTN Bill",
+      "detection_keywords": ["mtn", "mtn south africa", "mtn mobile", "airtime", "mtn group"],
+      "min_keyword_score": 2,
+      "row_split_pattern": "(?m)^\\s*(\\d{2}[/-]\\d{2}[/-]\\d{4})",
+      "columns": [
+        {
+          "name": "date",
+          "display_name": "Date",
+          "regex": "(\\d{2}[/-]\\d{2}[/-]\\d{4})",
+          "capture_group": 1,
+          "default_value": "",
+          "dtype": "date",
+          "date_format": "%d/%m/%Y",
+          "transform": null,
+          "description": "Transaction date",
+          "example_match": "15/03/2024"
+        },
+        {
+          "name": "description",
+          "display_name": "Description",
+          "regex": "\\d{2}[/-]\\d{2}[/-]\\d{4}\\s+(.+?)\\s{2,}",
+          "capture_group": 1,
+          "default_value": "",
+          "dtype": "str",
+          "date_format": null,
+          "transform": "strip",
+          "description": "Line item description",
+          "example_match": "Voice Call Local"
+        },
+        {
+          "name": "duration",
+          "display_name": "Duration",
+          "regex": "(\\d{2}:\\d{2}:\\d{2})",
+          "capture_group": 1,
+          "default_value": "",
+          "dtype": "str",
+          "date_format": null,
+          "transform": null,
+          "description": "Call duration in HH:MM:SS",
+          "example_match": "00:05:32"
+        },
+        {
+          "name": "amount",
+          "display_name": "Amount (R)",
+          "regex": "R?\\s*([\\d,]+\\.\\d{2})\\s*$",
+          "capture_group": 1,
+          "default_value": "0.00",
+          "dtype": "float",
+          "date_format": null,
+          "transform": "remove_commas",
+          "description": "Rand amount at end of line",
+          "example_match": "2.50"
+        }
+      ],
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "created_by": "manual",
+        "last_modified": "2024-01-01T00:00:00Z",
+        "version": 1,
+        "accuracy_score_on_creation": null
+      }
+    },
+    "cell_c": {
+      "display_name": "Cell C Bill",
+      "detection_keywords": ["cell c", "cell-c", "cellc", "cell c limited", "airtime", "data bundle"],
+      "min_keyword_score": 2,
+      "row_split_pattern": "(?m)^\\s*(\\d{2}[/-]\\d{2}[/-]\\d{4})",
+      "columns": [
+        {
+          "name": "date",
+          "display_name": "Date",
+          "regex": "(\\d{2}[/-]\\d{2}[/-]\\d{4})",
+          "capture_group": 1,
+          "default_value": "",
+          "dtype": "date",
+          "date_format": "%d/%m/%Y",
+          "transform": null,
+          "description": "Transaction date",
+          "example_match": "15/03/2024"
+        },
+        {
+          "name": "description",
+          "display_name": "Description",
+          "regex": "\\d{2}[/-]\\d{2}[/-]\\d{4}\\s+(.+?)\\s{2,}",
+          "capture_group": 1,
+          "default_value": "",
+          "dtype": "str",
+          "date_format": null,
+          "transform": "strip",
+          "description": "Line item description",
+          "example_match": "Monthly Subscription"
+        },
+        {
+          "name": "amount",
+          "display_name": "Amount (R)",
+          "regex": "R?\\s*([\\d,]+\\.\\d{2})\\s*$",
+          "capture_group": 1,
+          "default_value": "0.00",
+          "dtype": "float",
+          "date_format": null,
+          "transform": "remove_commas",
+          "description": "Rand amount at end of line",
+          "example_match": "99.00"
+        }
+      ],
+      "metadata": {
+        "created_at": "2024-01-01T00:00:00Z",
+        "created_by": "manual",
+        "last_modified": "2024-01-01T00:00:00Z",
+        "version": 1,
+        "accuracy_score_on_creation": null
+      }
+    }
+  }
+}
