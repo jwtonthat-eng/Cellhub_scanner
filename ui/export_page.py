@@ -125,21 +125,43 @@ class ExportPage(ctk.CTkFrame):
         )
         self._status_label.pack(pady=(0, 20))
 
-        # Drive upload banner (hidden until export completes)
-        self._drive_banner = ctk.CTkFrame(center, fg_color=("gray80", "gray25"), corner_radius=10)
+        # Drive upload card (hidden until export completes, shown for ALL bill types)
+        self._drive_banner = ctk.CTkFrame(
+            center,
+            fg_color=("#e8f0fe", "#1c2e4a"),
+            corner_radius=12,
+            border_width=1,
+            border_color=("#1a73e8", "#1558b0"),
+        )
+
+        drive_inner = ctk.CTkFrame(self._drive_banner, fg_color="transparent")
+        drive_inner.pack(fill="x", padx=16, pady=14)
+        drive_inner.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
-            self._drive_banner,
-            text="Export complete! Upload to Google Drive?",
-            font=ctk.CTkFont(size=13),
-        ).pack(side="left", padx=16, pady=10)
+            drive_inner,
+            text="File saved!",
+            font=ctk.CTkFont(size=13, weight="bold"),
+            text_color=("#1a73e8", "#5b9cf6"),
+        ).grid(row=0, column=0, sticky="w")
+
+        ctk.CTkLabel(
+            drive_inner,
+            text="Would you like to upload this file to Google Drive?",
+            font=ctk.CTkFont(size=12),
+            text_color=("gray30", "gray75"),
+        ).grid(row=1, column=0, sticky="w", pady=(2, 0))
 
         ctk.CTkButton(
-            self._drive_banner,
-            text="Upload to Drive",
-            width=160,
+            drive_inner,
+            text="☁  Upload to Google Drive",
+            width=230,
+            height=46,
+            font=ctk.CTkFont(size=13),
+            fg_color=("#1a73e8", "#1558b0"),
+            hover_color=("#1557c0", "#0f3f7a"),
             command=self._open_drive_dialog,
-        ).pack(side="right", padx=16, pady=10)
+        ).grid(row=0, column=1, rowspan=2, padx=(16, 0), sticky="e")
 
     # ------------------------------------------------------------------
     # Path handling

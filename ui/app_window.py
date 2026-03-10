@@ -17,9 +17,9 @@ if TYPE_CHECKING:
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-SIDEBAR_WIDTH = 200
+SIDEBAR_WIDTH = 220          # Wider for touch targets
 APP_TITLE = "Cellhub Scanner"
-APP_GEOMETRY = "1200x720"
+APP_GEOMETRY = "1280x800"   # Surface tablet default resolution
 
 # Navigation items: (label, page_key)
 NAV_ITEMS = [
@@ -35,7 +35,12 @@ class AppWindow(ctk.CTk):
         super().__init__()
         self.title(APP_TITLE)
         self.geometry(APP_GEOMETRY)
-        self.minsize(900, 600)
+        self.minsize(960, 640)
+        # Surface tablet: maximise on startup for best touch experience
+        try:
+            self.state("zoomed")
+        except Exception:
+            pass
 
         # Shared application state passed between pages
         self.state: dict = {
@@ -73,14 +78,14 @@ class AppWindow(ctk.CTk):
         logo_label = ctk.CTkLabel(
             self._sidebar,
             text=APP_TITLE,
-            font=ctk.CTkFont(size=18, weight="bold"),
+            font=ctk.CTkFont(size=19, weight="bold"),
         )
-        logo_label.grid(row=0, column=0, padx=16, pady=(20, 8))
+        logo_label.grid(row=0, column=0, padx=16, pady=(24, 6))
 
         subtitle = ctk.CTkLabel(
             self._sidebar,
             text="Telecom Bill Processor",
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(size=12),
             text_color=("gray60", "gray45"),
         )
         subtitle.grid(row=1, column=0, padx=16, pady=(0, 16))
@@ -88,33 +93,34 @@ class AppWindow(ctk.CTk):
         ctk.CTkFrame(self._sidebar, height=1, fg_color=("gray80", "gray30")).grid(
             row=2, column=0, sticky="ew", padx=8, pady=4)
 
-        # Nav buttons
+        # Nav buttons — large touch targets (height=46)
         for i, (label, key) in enumerate(NAV_ITEMS, start=3):
             btn = ctk.CTkButton(
                 self._sidebar,
                 text=label,
                 anchor="w",
-                corner_radius=6,
-                height=38,
+                corner_radius=8,
+                height=46,
+                font=ctk.CTkFont(size=13),
                 fg_color="transparent",
                 text_color=("gray10", "gray90"),
                 hover_color=("gray75", "gray25"),
                 command=lambda k=key: self.show_page(k),
             )
-            btn.grid(row=i, column=0, padx=8, pady=3, sticky="ew")
+            btn.grid(row=i, column=0, padx=8, pady=4, sticky="ew")
             self._nav_buttons[key] = btn
 
         # Theme toggle at bottom
         self._theme_btn = ctk.CTkButton(
             self._sidebar,
             text="Toggle Theme",
-            height=32,
+            height=40,
             fg_color="transparent",
             text_color=("gray40", "gray60"),
             hover_color=("gray85", "gray20"),
             command=self._toggle_theme,
         )
-        self._theme_btn.grid(row=20, column=0, padx=8, pady=(4, 16), sticky="ew")
+        self._theme_btn.grid(row=20, column=0, padx=8, pady=(4, 20), sticky="ew")
 
         # Main content area
         self._content = ctk.CTkFrame(self, corner_radius=0, fg_color=("gray95", "gray10"))

@@ -50,24 +50,24 @@ class UploadPage(ctk.CTkFrame):
         ctk.CTkLabel(
             center,
             text="Upload Telecom Bill PDF",
-            font=ctk.CTkFont(size=22, weight="bold"),
+            font=ctk.CTkFont(size=24, weight="bold"),
         ).pack(pady=(0, 6))
 
         ctk.CTkLabel(
             center,
-            text="Supports PDF files up to 80 pages. Text is extracted character-by-character.",
-            font=ctk.CTkFont(size=12),
+            text="Tap Browse or drag a PDF onto the box below.",
+            font=ctk.CTkFont(size=13),
             text_color=("gray40", "gray65"),
         ).pack(pady=(0, 24))
 
-        # Drop zone
+        # Drop zone — large touch target
         self._drop_frame = ctk.CTkFrame(
             center,
-            width=480,
-            height=180,
+            width=520,
+            height=210,
             border_width=2,
             border_color=("gray70", "gray40"),
-            corner_radius=12,
+            corner_radius=16,
         )
         self._drop_frame.pack(pady=(0, 20))
         self._drop_frame.pack_propagate(False)
@@ -75,18 +75,18 @@ class UploadPage(ctk.CTkFrame):
         self._drop_icon = ctk.CTkLabel(
             self._drop_frame,
             text="📄",
-            font=ctk.CTkFont(size=40),
+            font=ctk.CTkFont(size=48),
         )
         self._drop_icon.place(relx=0.5, rely=0.3, anchor="center")
 
         self._drop_label = ctk.CTkLabel(
             self._drop_frame,
-            text="Drag & drop a PDF here\nor click Browse",
-            font=ctk.CTkFont(size=13),
+            text="Drag & drop a PDF here\nor tap Browse below",
+            font=ctk.CTkFont(size=14),
             text_color=("gray40", "gray65"),
             justify="center",
         )
-        self._drop_label.place(relx=0.5, rely=0.62, anchor="center")
+        self._drop_label.place(relx=0.5, rely=0.65, anchor="center")
 
         # Enable drag-and-drop via tkinter DND (Windows only, best-effort)
         try:
@@ -99,49 +99,53 @@ class UploadPage(ctk.CTkFrame):
         self._file_label = ctk.CTkLabel(
             center,
             text="No file selected",
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(size=12),
             text_color=("gray50", "gray60"),
         )
-        self._file_label.pack(pady=(0, 6))
+        self._file_label.pack(pady=(0, 4))
 
         # Page count display
         self._page_label = ctk.CTkLabel(
             center,
             text="",
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(size=12),
             text_color=("gray50", "gray60"),
         )
         self._page_label.pack(pady=(0, 16))
 
-        # Buttons
+        # Buttons — tall for touch (height=48)
         btn_row = ctk.CTkFrame(center, fg_color="transparent")
         btn_row.pack(pady=(0, 16))
 
         ctk.CTkButton(
             btn_row,
             text="Browse PDF",
-            width=140,
+            width=160,
+            height=48,
+            font=ctk.CTkFont(size=14),
             command=self._browse,
-        ).pack(side="left", padx=8)
+        ).pack(side="left", padx=10)
 
         self._process_btn = ctk.CTkButton(
             btn_row,
             text="Process",
-            width=140,
+            width=160,
+            height=48,
+            font=ctk.CTkFont(size=14, weight="bold"),
             state="disabled",
             command=self._start_processing,
         )
-        self._process_btn.pack(side="left", padx=8)
+        self._process_btn.pack(side="left", padx=10)
 
         # Progress
-        self._progress_bar = ctk.CTkProgressBar(center, width=480)
+        self._progress_bar = ctk.CTkProgressBar(center, width=520, height=10)
         self._progress_bar.set(0)
-        self._progress_bar.pack(pady=(0, 8))
+        self._progress_bar.pack(pady=(0, 10))
 
         self._status_label = ctk.CTkLabel(
             center,
             text="",
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(size=12),
             text_color=("gray40", "gray65"),
         )
         self._status_label.pack()

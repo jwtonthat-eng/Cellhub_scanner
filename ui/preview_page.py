@@ -98,9 +98,10 @@ class PreviewPage(ctk.CTkFrame):
         # Mousewheel scrolling
         self._canvas.bind_all("<MouseWheel>", self._on_mousewheel)
 
-        # Bottom bar
+        # ── Bottom action bar ────────────────────────────────────────────
         bottom = ctk.CTkFrame(self, fg_color="transparent")
         bottom.grid(row=2, column=0, sticky="ew", padx=20, pady=(0, 16))
+        bottom.grid_columnconfigure(1, weight=1)
 
         self._row_count_label = ctk.CTkLabel(
             bottom,
@@ -108,14 +109,46 @@ class PreviewPage(ctk.CTkFrame):
             font=ctk.CTkFont(size=11),
             text_color=("gray40", "gray65"),
         )
-        self._row_count_label.pack(side="left")
+        self._row_count_label.grid(row=0, column=0, sticky="w")
+
+        btn_frame = ctk.CTkFrame(bottom, fg_color="transparent")
+        btn_frame.grid(row=0, column=2, sticky="e")
+
+        # Optional Gemini accuracy validation
+        self._validate_btn = ctk.CTkButton(
+            btn_frame,
+            text="✓  Validate Accuracy",
+            width=175,
+            height=42,
+            fg_color="transparent",
+            border_width=1,
+            border_color=("gray60", "gray45"),
+            text_color=("gray20", "gray80"),
+            hover_color=("gray85", "gray25"),
+            command=self._open_validation,
+        )
+        self._validate_btn.pack(side="left", padx=(0, 8))
 
         ctk.CTkButton(
-            bottom,
+            btn_frame,
             text="Export →",
-            width=120,
+            width=110,
+            height=42,
             command=lambda: self.app.show_page("export"),
-        ).pack(side="right")
+        ).pack(side="left", padx=(0, 8))
+
+        # Drive upload button — enabled once a file has been exported
+        self._drive_btn = ctk.CTkButton(
+            btn_frame,
+            text="☁  Upload to Drive",
+            width=165,
+            height=42,
+            fg_color=("#1a73e8", "#1558b0"),
+            hover_color=("#1557c0", "#0f3f7a"),
+            state="disabled",
+            command=self._open_drive,
+        )
+        self._drive_btn.pack(side="left")
 
     # ------------------------------------------------------------------
     # Data loading
@@ -145,6 +178,12 @@ class PreviewPage(ctk.CTkFrame):
             )
         else:
             self._accuracy_badge.configure(text="", fg_color="transparent")
+
+        # Enable Drive button once an export exists this session
+        if self.app.state.get("export_path"):
+            self._drive_btn.configure(state="normal")
+        else:
+            self._drive_btn.configure(state="disabled")
 
         self._render_table(df)
 
@@ -206,6 +245,25 @@ class PreviewPage(ctk.CTkFrame):
                 bg=row_bg_even, fg="#6b7280",
                 padx=6, pady=4,
             ).grid(row=max_rows + 1, column=0, columnspan=len(df.columns), sticky="ew")
+
+    # ------------------------------------------------------------------
+    # Actions
+    # ------------------------------------------------------------------
+
+    def _open_validation(self) -> None:
+        from ui.gemini_validation_dialog import GeminiValidationDialog
+        dialog = GeminiValidationDialog(self, app=self.app)
+        dialog.grab_set()
+        self.wait_window(dialog)
+        self.on_show()  # Refresh accuracy badge after dialog closes
+
+    def _open_drive(self) -> None:
+        from ui.drive_upload_dialog import DriveUploadDialog
+        path = self.app.state.get("export_path")
+        if not path:
+            return
+        dialog = DriveUploadDialog(self, file_path=path)
+        dialog.grab_set()
 
     # ------------------------------------------------------------------
     # Scroll helpers
