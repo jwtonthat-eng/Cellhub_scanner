@@ -4,7 +4,9 @@ All pages are created once and shown/hidden via pack/pack_forget.
 """
 from __future__ import annotations
 
+import sys
 import tkinter as tk
+import webbrowser
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -13,9 +15,20 @@ import customtkinter as ctk
 if TYPE_CHECKING:
     pass
 
+
+def _resource_path(relative: str) -> Path:
+    """Return absolute path — works both in source tree and PyInstaller bundle."""
+    base = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent.parent))
+    return base / relative
+
+
 # Configure appearance
 ctk.set_appearance_mode("dark")
-ctk.set_default_color_theme("blue")
+_theme_path = _resource_path("assets/tmobile_theme.json")
+if _theme_path.exists():
+    ctk.set_default_color_theme(str(_theme_path))
+else:
+    ctk.set_default_color_theme("blue")
 
 SIDEBAR_WIDTH = 220          # Wider for touch targets
 APP_TITLE = "Cellhub Scanner"
@@ -110,6 +123,18 @@ class AppWindow(ctk.CTk):
             btn.grid(row=i, column=0, padx=8, pady=4, sticky="ew")
             self._nav_buttons[key] = btn
 
+        # Help button
+        self._help_btn = ctk.CTkButton(
+            self._sidebar,
+            text="? Help Guide",
+            height=40,
+            fg_color="transparent",
+            text_color=("gray40", "gray60"),
+            hover_color=("gray85", "gray20"),
+            command=self._open_help,
+        )
+        self._help_btn.grid(row=19, column=0, padx=8, pady=(4, 2), sticky="ew")
+
         # Theme toggle at bottom
         self._theme_btn = ctk.CTkButton(
             self._sidebar,
@@ -120,7 +145,7 @@ class AppWindow(ctk.CTk):
             hover_color=("gray85", "gray20"),
             command=self._toggle_theme,
         )
-        self._theme_btn.grid(row=20, column=0, padx=8, pady=(4, 20), sticky="ew")
+        self._theme_btn.grid(row=20, column=0, padx=8, pady=(2, 20), sticky="ew")
 
         # Main content area
         self._content = ctk.CTkFrame(self, corner_radius=0, fg_color=("gray95", "gray10"))
@@ -205,6 +230,10 @@ class AppWindow(ctk.CTk):
     # ------------------------------------------------------------------
     # Theme
     # ------------------------------------------------------------------
+
+    def _open_help(self) -> None:
+        guide = _resource_path("docs/user_guide.html")
+        webbrowser.open(guide.as_uri())
 
     def _toggle_theme(self) -> None:
         current = ctk.get_appearance_mode()

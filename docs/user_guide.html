@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cellhub Scanner — User Guide</title>
+<style>
+  /* ── Reset & Base ───────────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1a1a1a;
+    background: #f7f7f7;
+  }
+
+  /* ── Cover page ─────────────────────────────────────────────────────── */
+  .cover {
+    background: linear-gradient(135deg, #E20074 0%, #7A0039 100%);
+    color: white;
+    padding: 80px 60px 60px;
+    min-height: 280px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    right: -60px; top: -60px;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+  }
+  .cover-logo {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-bottom: 24px;
+  }
+  .cover h1 {
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+  .cover-sub {
+    font-size: 18px;
+    opacity: 0.85;
+    margin-bottom: 32px;
+    max-width: 560px;
+  }
+  .cover-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* ── Layout ─────────────────────────────────────────────────────────── */
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* ── Table of contents ──────────────────────────────────────────────── */
+  .toc {
+    background: white;
+    border-left: 4px solid #E20074;
+    border-radius: 0 10px 10px 0;
+    padding: 28px 32px;
+    margin: 40px 0 50px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .toc h2 { font-size: 17px; color: #E20074; margin-bottom: 16px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin-bottom: 6px; }
+  .toc a { color: #333; text-decoration: none; font-weight: 500; }
+  .toc a:hover { color: #E20074; }
+
+  /* ── Section headers ────────────────────────────────────────────────── */
+  .section {
+    background: white;
+    border-radius: 12px;
+    padding: 36px 40px;
+    margin-bottom: 32px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    page-break-inside: avoid;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 2px solid #f0f0f0;
+  }
+  .section-num {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, #E20074, #B3005A);
+    color: white;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .section h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  /* ── Steps ──────────────────────────────────────────────────────────── */
+  .step {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 22px;
+    align-items: flex-start;
+  }
+  .step-num {
+    width: 32px; height: 32px;
+    background: #E20074;
+    color: white;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-body { flex: 1; }
+  .step-body strong { font-size: 16px; display: block; margin-bottom: 4px; color: #111; }
+  .step-body p { color: #444; font-size: 15px; margin-top: 4px; }
+
+  /* ── Screen mock ────────────────────────────────────────────────────── */
+  .screen-mock {
+    background: #1a1a1a;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #333;
+  }
+  .screen-mock-bar {
+    display: flex;
+    gap: 7px;
+    margin-bottom: 16px;
+  }
+  .screen-mock-bar span {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+  }
+  .dot-red   { background: #ff5f57; }
+  .dot-amber { background: #febc2e; }
+  .dot-green { background: #28c840; }
+  .screen-content {
+    display: flex;
+    gap: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #333;
+    min-height: 160px;
+  }
+  .screen-sidebar {
+    background: #111;
+    width: 130px;
+    padding: 14px 10px;
+    flex-shrink: 0;
+  }
+  .screen-sidebar-title {
+    color: #E20074;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+  }
+  .screen-nav-item {
+    background: transparent;
+    color: #aaa;
+    font-size: 11px;
+    padding: 7px 8px;
+    border-radius: 5px;
+    margin-bottom: 4px;
+    cursor: default;
+  }
+  .screen-nav-item.active {
+    background: #3a0020;
+    color: #E20074;
+    font-weight: 600;
+  }
+  .screen-main {
+    background: #1e1e1e;
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .mock-drop-zone {
+    border: 2px dashed #555;
+    border-radius: 10px;
+    width: 220px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 4px;
+    color: #888;
+    font-size: 11px;
+  }
+  .mock-btn-row {
+    display: flex;
+    gap: 8px;
+  }
+  .mock-btn {
+    background: #E20074;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .mock-btn.outline {
+    background: transparent;
+    border: 1px solid #555;
+    color: #aaa;
+  }
+  .mock-progress {
+    width: 220px;
+    height: 6px;
+    background: #333;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .mock-progress-fill {
+    height: 100%;
+    background: #E20074;
+    border-radius: 3px;
+    width: 65%;
+  }
+  .mock-table-header {
+    background: #2a0015;
+    color: #E20074;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 5px 8px;
+    display: flex;
+    gap: 24px;
+    border-radius: 4px 4px 0 0;
+    width: 280px;
+  }
+  .mock-table-row {
+    background: #262626;
+    color: #ccc;
+    font-size: 10px;
+    padding: 5px 8px;
+    display: flex;
+    gap: 24px;
+    width: 280px;
+  }
+  .mock-table-row:nth-child(odd) { background: #1e1e1e; }
+  .mock-badge {
+    background: #16a34a;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+  }
+
+  /* ── Callouts ───────────────────────────────────────────────────────── */
+  .callout {
+    display: flex;
+    gap: 14px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    font-size: 15px;
+    align-items: flex-start;
+  }
+  .callout-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+  .callout.tip    { background: #fff3f8; border-left: 4px solid #E20074; }
+  .callout.info   { background: #e8f0fe; border-left: 4px solid #1a73e8; }
+  .callout.warn   { background: #fff8e1; border-left: 4px solid #f59e0b; }
+  .callout.good   { background: #f0fdf4; border-left: 4px solid #16a34a; }
+  .callout strong { display: block; margin-bottom: 4px; }
+
+  /* ── Button visuals ─────────────────────────────────────────────────── */
+  .ui-btn {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  .ui-btn.magenta  { background: #E20074; color: white; }
+  .ui-btn.outline  { border: 1.5px solid #888; color: #444; }
+  .ui-btn.blue     { background: #1a73e8; color: white; }
+  .ui-btn.green    { background: #16a34a; color: white; }
+
+  /* ── Workflow diagram ────────────────────────────────────────────────── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 24px 0;
+  }
+  .flow-step {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: white;
+    border: 1.5px solid #eee;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .flow-step + .flow-step { margin-top: 6px; }
+  .flow-step .flow-icon { font-size: 22px; }
+  .flow-arrow {
+    text-align: center;
+    color: #E20074;
+    font-size: 20px;
+    margin: 2px 0;
+  }
+
+  /* ── Accuracy colours ───────────────────────────────────────────────── */
+  .badge-green  { background: #16a34a; color: white; padding: 3px 12px; border-radius: 12px; font-size: 13px; font-weight: 700; }
+  .badge-yellow { background: #ca8a04; color: white; padding: 3px 12px; border-radius: 12px; font-size: 13px; font-weight: 700; }
+  .badge-orange { background: #ea580c; color: white; padding: 3px 12px; border-radius: 12px; font-size: 13px; font-weight: 700; }
+  .badge-red    { background: #dc2626; color: white; padding: 3px 12px; border-radius: 12px; font-size: 13px; font-weight: 700; }
+
+  /* ── FAQ ────────────────────────────────────────────────────────────── */
+  details {
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  summary {
+    padding: 14px 18px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: '▸'; color: #E20074; font-size: 16px; }
+  details[open] summary::after { content: '▾'; }
+  details[open] summary { border-bottom: 1px solid #eee; }
+  .faq-body { padding: 16px 18px; background: #fafafa; font-size: 15px; color: #444; line-height: 1.7; }
+
+  /* ── Quick ref table ────────────────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 15px; }
+  th { background: #E20074; color: white; padding: 10px 14px; text-align: left; }
+  td { padding: 10px 14px; border-bottom: 1px solid #eee; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #fafafa; }
+
+  /* ── Footer ─────────────────────────────────────────────────────────── */
+  footer {
+    background: #1a1a1a;
+    color: #888;
+    text-align: center;
+    padding: 28px;
+    font-size: 13px;
+    margin-top: 60px;
+  }
+  footer span { color: #E20074; }
+
+  /* ── Print ──────────────────────────────────────────────────────────── */
+  @media print {
+    body { background: white; }
+    .section { box-shadow: none; border: 1px solid #ddd; }
+    .toc { box-shadow: none; }
+    .cover { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ COVER ═══════════════════════════════════ -->
+<div class="cover">
+  <div class="container">
+    <div class="cover-logo">T-Mobile · Cellhub</div>
+    <h1>Cellhub Scanner<br>User Guide</h1>
+    <p class="cover-sub">
+      Step-by-step instructions for extracting tables from telecom bills,
+      exporting to Excel, and uploading to Google Drive.
+    </p>
+    <span class="cover-badge">For Sales Teams · Surface Tablet Edition</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ═══════════════════════ TABLE OF CONTENTS ════════════════════════ -->
+  <div class="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#s1">Starting the App</a></li>
+      <li><a href="#s2">Processing a Known Bill (everyday use)</a></li>
+      <li><a href="#s3">What Happens with an Unrecognised Bill</a></li>
+      <li><a href="#s4">Setting Up New Bill Patterns with Gemini</a></li>
+      <li><a href="#s5">Checking Accuracy (Optional)</a></li>
+      <li><a href="#s6">Exporting to Excel or CSV</a></li>
+      <li><a href="#s7">Uploading to Google Drive</a></li>
+      <li><a href="#s8">Quick Reference</a></li>
+      <li><a href="#s9">Frequently Asked Questions</a></li>
+    </ol>
+  </div>
+
+  <!-- ═══════════════════════════ SECTION 1 ════════════════════════════ -->
+  <div class="section" id="s1">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>Starting the App</h2>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">💡</span>
+      <div><strong>First time only</strong> Double-click <strong>install_and_run.bat</strong> — it sets everything up automatically. This takes about 2 minutes on first launch. After that, use the same file every time.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Find the app on your tablet</strong>
+        <p>Look for the <strong>Cellhub Scanner</strong> shortcut on your desktop, or open the Start Menu and search for "Cellhub Scanner". You can also double-click <em>install_and_run.bat</em> inside the app folder.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Wait for the app to open</strong>
+        <p>A loading screen appears briefly, then the main window opens maximised — ready to use. You'll see the pink sidebar on the left and the Upload page in the centre.</p>
+      </div>
+    </div>
+
+    <!-- Screen mock: main window -->
+    <div class="screen-mock">
+      <div class="screen-mock-bar">
+        <span class="dot-red"></span><span class="dot-amber"></span><span class="dot-green"></span>
+      </div>
+      <div class="screen-content">
+        <div class="screen-sidebar">
+          <div class="screen-sidebar-title">CELLHUB</div>
+          <div class="screen-nav-item active">📤  Upload PDF</div>
+          <div class="screen-nav-item">👁  Preview Table</div>
+          <div class="screen-nav-item">💾  Export</div>
+          <div class="screen-nav-item">⚙  Patterns</div>
+        </div>
+        <div class="screen-main">
+          <div class="mock-drop-zone">
+            <div style="font-size:24px">📄</div>
+            <div>Tap Browse or drag PDF here</div>
+          </div>
+          <div class="mock-btn-row">
+            <button class="mock-btn outline">Browse PDF</button>
+            <button class="mock-btn" style="opacity:0.4">Process</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">✋</span>
+      <div><strong>Touch tip</strong> The app is designed for a Surface tablet. All buttons are large enough to tap with a finger. You can also use the included stylus for more precision.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ SECTION 2 ════════════════════════════ -->
+  <div class="section" id="s2">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <h2>Processing a Known Bill (everyday use)</h2>
+    </div>
+
+    <p style="margin-bottom:20px; color:#444;">Use this workflow for bills from carriers the app already knows: <strong>Telkom Mobile, Vodacom, MTN, and Cell C</strong>.</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Tap "Browse PDF"</strong>
+        <p>A file picker window opens. Navigate to where the bill PDF is saved (Downloads, Desktop, OneDrive, etc.) and tap the file once to select it, then tap <strong>Open</strong>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Check the file name and page count appear</strong>
+        <p>Below the upload box you'll see the file name and how many pages it has (e.g. "48 pages"). If something looks wrong, tap Browse again and choose the correct file.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Tap "Process"</strong>
+        <p>The pink progress bar fills as the app reads each page. For an 80-page bill this takes roughly 20–60 seconds depending on the tablet's speed. You'll see a status message like <em>"Extracting page 12 of 80…"</em></p>
+      </div>
+    </div>
+
+    <!-- Screen mock: processing -->
+    <div class="screen-mock">
+      <div class="screen-mock-bar">
+        <span class="dot-red"></span><span class="dot-amber"></span><span class="dot-green"></span>
+      </div>
+      <div class="screen-content">
+        <div class="screen-sidebar">
+          <div class="screen-sidebar-title">CELLHUB</div>
+          <div class="screen-nav-item active">📤  Upload PDF</div>
+          <div class="screen-nav-item">👁  Preview Table</div>
+          <div class="screen-nav-item">💾  Export</div>
+          <div class="screen-nav-item">⚙  Patterns</div>
+        </div>
+        <div class="screen-main">
+          <div style="color:#ccc; font-size:11px; text-align:center; margin-bottom:10px;">vodacom_bill_march.pdf · 62 pages</div>
+          <div class="mock-progress"><div class="mock-progress-fill"></div></div>
+          <div style="color:#888; font-size:10px;">Extracting page 39 of 62…</div>
+          <div class="mock-btn-row" style="margin-top:8px;">
+            <button class="mock-btn" style="opacity:0.5">Processing…</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>The app jumps to the Preview page automatically</strong>
+        <p>You don't need to click anything — it navigates for you. You'll see a table of all the extracted line items. Scroll left/right or up/down to check the data looks correct.</p>
+      </div>
+    </div>
+
+    <div class="callout good">
+      <span class="callout-icon">✅</span>
+      <div>If the table looks right, you're ready to export. Tap <strong>Export →</strong> in the bottom-right corner.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ SECTION 3 ════════════════════════════ -->
+  <div class="section" id="s3">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2>What Happens with an Unrecognised Bill</h2>
+    </div>
+
+    <p style="margin-bottom:20px; color:#444;">If you upload a bill from a carrier the app hasn't seen before, it will tell you and open the <strong>Gemini Portal</strong> automatically.</p>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div><strong>Don't worry</strong> — this only happens once per new carrier. After you set it up, the app remembers it forever and processes that carrier's bills automatically from then on.</div>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step"><span class="flow-icon">📤</span> You upload the PDF and tap Process</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><span class="flow-icon">🔍</span> App checks its pattern list — carrier not found</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><span class="flow-icon">🤖</span> Gemini Portal opens with a ready-made prompt</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><span class="flow-icon">📋</span> You copy the prompt → paste into Gemini → copy the reply</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><span class="flow-icon">✏️</span> You paste the reply into the app and review the patterns</div>
+      <div class="flow-arrow">↓</div>
+      <div class="flow-step"><span class="flow-icon">✅</span> App saves the patterns and processes the bill automatically</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ SECTION 4 ════════════════════════════ -->
+  <div class="section" id="s4">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <h2>Setting Up New Bill Patterns with Gemini</h2>
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Tap "Open Gemini →"</strong>
+        <p>This opens <a href="https://gemini.google.com" style="color:#E20074;">gemini.google.com</a> in your browser. Sign in with your Google account if prompted.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Upload the PDF to Gemini</strong>
+        <p>In the Gemini chat box, tap the <strong>+ (attachment) button</strong> and select the same bill PDF from your files. Wait until Gemini shows a thumbnail of the PDF.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Copy the prompt from the app</strong>
+        <p>Back in Cellhub Scanner, tap the <span class="ui-btn magenta">Copy Prompt</span> button. This copies a detailed instruction to your clipboard.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Paste into Gemini and send</strong>
+        <p>Switch back to the Gemini browser tab. Tap the message box, then press and hold to paste (or use Ctrl+V). Tap the send button. Gemini will think for a few seconds and reply with a block of JSON code.</p>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div><strong>What does "JSON" mean?</strong> It's just a special text format the app understands — it looks like a block of text with lots of curly braces <code>{ }</code>. You don't need to understand it, just copy it.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <strong>Copy Gemini's full reply</strong>
+        <p>Select all of Gemini's response text (tap and hold, then "Select All" or drag the handles to cover everything). Then tap <strong>Copy</strong>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <strong>Paste into the Cellhub Scanner response box</strong>
+        <p>Switch back to the app. Tap inside the large text area in Step 3 (it says <em>"Paste Gemini's JSON response here…"</em>) and paste (press and hold → Paste, or Ctrl+V).</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <strong>Tap "Parse Response & Continue →"</strong>
+        <p>The app reads the response and opens the <strong>Pattern Review</strong> screen showing the column names and patterns Gemini suggested.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">8</div>
+      <div class="step-body">
+        <strong>Review the columns (optional)</strong>
+        <p>You'll see a list of columns like "Date", "Description", "Amount". If a name doesn't look right you can edit it. You can also tap <strong>Test</strong> next to any pattern to check it finds the right data. If everything looks good, move on.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">9</div>
+      <div class="step-body">
+        <strong>Tap "Save Patterns & Process PDF →"</strong>
+        <p>The app saves the new carrier patterns, then automatically processes your bill. You'll land on the Preview table — same as a known bill from here on.</p>
+      </div>
+    </div>
+
+    <div class="callout good">
+      <span class="callout-icon">🎉</span>
+      <div><strong>Done!</strong> This carrier is now saved. Next time you upload a bill from the same carrier, the app will recognise it instantly with no Gemini step needed.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ SECTION 5 ════════════════════════════ -->
+  <div class="section" id="s5">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2>Checking Accuracy (Optional)</h2>
+    </div>
+
+    <p style="margin-bottom:20px; color:#444;">After processing any bill — even a known one — you can ask Gemini to spot-check a few rows and give you an accuracy score. This is completely optional.</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>On the Preview page, tap "✓  Validate Accuracy"</strong>
+        <p>A small window opens with a 3-step guide, similar to the Gemini Portal.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Open Gemini, upload the same PDF, copy and paste the prompt</strong>
+        <p>The prompt is shorter this time — it only asks Gemini to manually copy 3–5 rows from the bill's table. The column names are already filled in for you.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Paste Gemini's reply and tap "Run Accuracy Check →"</strong>
+        <p>The app compares what Gemini pulled manually against what the pattern matcher extracted. You get a score and a breakdown by column.</p>
+      </div>
+    </div>
+
+    <!-- Accuracy key -->
+    <p style="margin: 20px 0 10px; font-weight:600;">What the score means:</p>
+    <table>
+      <tr>
+        <th>Badge</th>
+        <th>Score</th>
+        <th>What to do</th>
+      </tr>
+      <tr>
+        <td><span class="badge-green">Excellent</span></td>
+        <td>90% or above</td>
+        <td>Patterns are working well. Export and upload.</td>
+      </tr>
+      <tr>
+        <td><span class="badge-yellow">Good</span></td>
+        <td>70–89%</td>
+        <td>Most rows are correct. Spot-check a few before exporting.</td>
+      </tr>
+      <tr>
+        <td><span class="badge-orange">Fair</span></td>
+        <td>50–69%</td>
+        <td>Worth checking the data manually. Contact your IT team to review the pattern.</td>
+      </tr>
+      <tr>
+        <td><span class="badge-red">Poor</span></td>
+        <td>Below 50%</td>
+        <td>The pattern may not suit this bill format. Contact IT.</td>
+      </tr>
+    </table>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Tap "Done — View Results"</strong>
+        <p>The dialog closes and the accuracy badge appears on the Preview table header. It will also be recorded on the metadata sheet of your Excel export.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ SECTION 6 ════════════════════════════ -->
+  <div class="section" id="s6">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <h2>Exporting to Excel or CSV</h2>
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Tap "Export →" on the Preview page</strong>
+        <p>Or tap <strong>Export</strong> in the left sidebar. The Export page opens.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Choose your format</strong>
+        <p>
+          <strong>Excel (.xlsx)</strong> — Best choice. Opens directly in Microsoft Excel, includes a separate metadata sheet with the bill type, date, and accuracy score.<br>
+          <strong>CSV (.csv)</strong> — Plain text format that works with any spreadsheet software.
+        </p>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">💡</span>
+      <div>When in doubt, choose <strong>Excel</strong>. It's easier to share with the team and contains more information.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Tap "Browse" to choose where to save the file</strong>
+        <p>A save dialog opens. Navigate to your preferred folder (e.g. <em>Documents &gt; Bills</em> or <em>OneDrive</em>). The file name is pre-filled with the bill type and date — you can change it if needed. Tap <strong>Save</strong>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Tap the big "Export" button</strong>
+        <p>The file is saved instantly. A blue card appears below the button asking if you want to upload to Google Drive.</p>
+      </div>
+    </div>
+
+    <!-- Screen mock: export page -->
+    <div class="screen-mock">
+      <div class="screen-mock-bar">
+        <span class="dot-red"></span><span class="dot-amber"></span><span class="dot-green"></span>
+      </div>
+      <div class="screen-content">
+        <div class="screen-sidebar">
+          <div class="screen-sidebar-title">CELLHUB</div>
+          <div class="screen-nav-item">📤  Upload PDF</div>
+          <div class="screen-nav-item">👁  Preview Table</div>
+          <div class="screen-nav-item active">💾  Export</div>
+          <div class="screen-nav-item">⚙  Patterns</div>
+        </div>
+        <div class="screen-main" style="align-items:flex-start; padding:16px; gap:8px;">
+          <div style="color:#e5e7eb; font-size:12px; font-weight:600; margin-bottom:6px;">Export Extracted Data</div>
+          <div style="color:#aaa; font-size:10px; margin-bottom:4px;">Format: ● Excel (.xlsx)  ○ CSV</div>
+          <div style="color:#aaa; font-size:10px; margin-bottom:8px;">Save to: Documents\vodacom_march.xlsx  [Browse]</div>
+          <button class="mock-btn" style="font-size:12px; padding:8px 20px;">Export</button>
+          <div style="background:#1c2e4a; border:1px solid #1558b0; border-radius:8px; padding:10px 12px; margin-top:8px; width:280px;">
+            <div style="color:#5b9cf6; font-size:10px; font-weight:700;">File saved!</div>
+            <div style="color:#aaa; font-size:10px;">Upload to Google Drive?</div>
+            <button class="mock-btn" style="font-size:10px; margin-top:6px; padding:5px 12px;">☁ Upload to Google Drive</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ SECTION 7 ════════════════════════════ -->
+  <div class="section" id="s7">
+    <div class="section-header">
+      <div class="section-num">7</div>
+      <h2>Uploading to Google Drive</h2>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">🔑</span>
+      <div><strong>First time only:</strong> Your IT team needs to set up Google Drive access (takes about 5 minutes). If it hasn't been set up yet, the app will show setup instructions. See your IT administrator.</div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Tap "☁  Upload to Google Drive"</strong>
+        <p>This button appears on both the <strong>Export page</strong> (after exporting) and the <strong>Preview page</strong> bottom bar. Either one works.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Sign in to Google (first time only)</strong>
+        <p>A browser window opens asking you to sign in to your Google account. Sign in and tap <strong>Allow</strong> when asked if Cellhub Scanner can access your Drive. The browser will close and you'll return to the app. This only happens once — the app remembers you.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Choose the folder in Google Drive</strong>
+        <p>A window shows your Google Drive folders. Tap the arrow next to a folder to expand it and see its sub-folders. Tap the folder where you want to save the file to select it (it highlights).</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <strong>Tap "Upload"</strong>
+        <p>A progress bar shows the upload. When it finishes, a message appears confirming the file is in Google Drive with a link you can tap to open it.</p>
+      </div>
+    </div>
+
+    <div class="callout good">
+      <span class="callout-icon">✅</span>
+      <div>The file is now in Google Drive and accessible to anyone with permission to that folder. You can also tap <strong>☁  Upload to Drive</strong> on the Preview page at any time after exporting.</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ SECTION 8 ════════════════════════════ -->
+  <div class="section" id="s8">
+    <div class="section-header">
+      <div class="section-num">8</div>
+      <h2>Quick Reference</h2>
+    </div>
+
+    <table>
+      <tr>
+        <th>Page</th>
+        <th>What to do</th>
+        <th>Key button</th>
+      </tr>
+      <tr>
+        <td><strong>Upload PDF</strong></td>
+        <td>Select or drag a PDF → tap Process</td>
+        <td><span class="ui-btn magenta">Process</span></td>
+      </tr>
+      <tr>
+        <td><strong>Gemini Portal</strong></td>
+        <td>Copy prompt → paste into Gemini → paste reply back</td>
+        <td><span class="ui-btn magenta">Parse Response &amp; Continue →</span></td>
+      </tr>
+      <tr>
+        <td><strong>Pattern Review</strong></td>
+        <td>Check column names → tap Test → save</td>
+        <td><span class="ui-btn magenta">Save Patterns &amp; Process →</span></td>
+      </tr>
+      <tr>
+        <td><strong>Preview Table</strong></td>
+        <td>Scroll through extracted data; optionally validate</td>
+        <td><span class="ui-btn outline">✓  Validate Accuracy</span> &nbsp; <span class="ui-btn magenta">Export →</span></td>
+      </tr>
+      <tr>
+        <td><strong>Export</strong></td>
+        <td>Choose Excel or CSV → browse save location → export</td>
+        <td><span class="ui-btn magenta">Export</span></td>
+      </tr>
+      <tr>
+        <td><strong>Google Drive</strong></td>
+        <td>Pick folder → upload</td>
+        <td><span class="ui-btn blue">☁  Upload to Google Drive</span></td>
+      </tr>
+    </table>
+
+    <p style="margin-top:24px; font-weight:600; margin-bottom:10px;">Supported carriers (built-in):</p>
+    <table>
+      <tr><th>Carrier</th><th>Pattern ID</th></tr>
+      <tr><td>Telkom Mobile</td><td>telkom_mobile</td></tr>
+      <tr><td>Vodacom</td><td>vodacom</td></tr>
+      <tr><td>MTN</td><td>mtn</td></tr>
+      <tr><td>Cell C</td><td>cell_c</td></tr>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════ SECTION 9 ════════════════════════════ -->
+  <div class="section" id="s9">
+    <div class="section-header">
+      <div class="section-num">9</div>
+      <h2>Frequently Asked Questions</h2>
+    </div>
+
+    <details>
+      <summary>The app says "Unknown bill type" — what does that mean?</summary>
+      <div class="faq-body">It means the carrier is new and the app hasn't seen it before. Follow Section 4 to set up the patterns using Gemini. It only needs to be done once. After that, the app will recognise the carrier automatically.</div>
+    </details>
+
+    <details>
+      <summary>The table doesn't look right — some columns are blank or mixed up.</summary>
+      <div class="faq-body">This can happen if the PDF layout is unusual. Try running the optional accuracy check (Section 5) to get a score. If the accuracy is below 70%, contact your IT team with the PDF so they can improve the pattern for that carrier.</div>
+    </details>
+
+    <details>
+      <summary>Gemini didn't return JSON — it gave me a message instead.</summary>
+      <div class="faq-body">Sometimes Gemini needs clearer instructions. Try sending it the prompt again and add this line at the end: <em>"Return only valid JSON, starting with { and ending with }. Do not include any other text."</em></div>
+    </details>
+
+    <details>
+      <summary>The Google Drive upload button is greyed out.</summary>
+      <div class="faq-body">You need to export the file first. Once you've saved an Excel or CSV file (Section 6), the Upload to Drive button becomes active on both the Export page and the Preview page.</div>
+    </details>
+
+    <details>
+      <summary>How do I process the next bill after finishing one?</summary>
+      <div class="faq-body">Tap <strong>Upload PDF</strong> in the left sidebar, then tap Browse and select the new PDF. The app replaces the previous data when you tap Process.</div>
+    </details>
+
+    <details>
+      <summary>The app is running slowly on a large bill.</summary>
+      <div class="faq-body">Bills over 60 pages can take up to 2 minutes to process. This is normal. Leave the app open and don't tap anything — the progress bar will keep moving. Make sure no other heavy apps are running at the same time.</div>
+    </details>
+
+    <details>
+      <summary>How do I add a pattern for a carrier I've already set up again?</summary>
+      <div class="faq-body">Tap <strong>Pattern Manager</strong> in the sidebar. You'll see all saved carriers. You can delete an old pattern there, then re-upload a bill from that carrier to go through the Gemini setup again from scratch.</div>
+    </details>
+
+    <details>
+      <summary>I accidentally closed the Google sign-in window. What do I do?</summary>
+      <div class="faq-body">Close the Drive upload dialog by tapping Cancel, then reopen it by tapping <strong>☁  Upload to Google Drive</strong> again. The sign-in window will open again.</div>
+    </details>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  <strong style="color:white;">Cellhub Scanner</strong> · <span>T-Mobile</span> · Internal Use Only<br>
+  For technical support contact your IT administrator
+</footer>
+
+</body>
+</html>
