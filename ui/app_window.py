@@ -40,6 +40,7 @@ NAV_ITEMS = [
     ("Preview Table", "preview"),
     ("Export", "export"),
     ("Pattern Manager", "patterns"),
+    ("Bill Audit", "audit"),
 ]
 
 
@@ -64,6 +65,10 @@ class AppWindow(ctk.CTk):
             "accuracy_report": None,
             "sample_rows": None,
             "export_path": None,
+            # Audit session state
+            "audit_report": None,
+            "audit_dfs": None,
+            "audit_labels": None,
         }
 
         self._build_layout()
@@ -162,12 +167,16 @@ class AppWindow(ctk.CTk):
         from ui.preview_page import PreviewPage
         from ui.export_page import ExportPage
         from ui.pattern_list_page import PatternListPage
+        from ui.audit_session_page import AuditSessionPage
+        from ui.audit_results_page import AuditResultsPage
 
         page_classes = {
-            "upload": UploadPage,
-            "preview": PreviewPage,
-            "export": ExportPage,
-            "patterns": PatternListPage,
+            "upload":        UploadPage,
+            "preview":       PreviewPage,
+            "export":        ExportPage,
+            "patterns":      PatternListPage,
+            "audit":         AuditSessionPage,
+            "audit_results": AuditResultsPage,
         }
         for key, cls in page_classes.items():
             page = cls(self._content, app=self)
@@ -204,6 +213,11 @@ class AppWindow(ctk.CTk):
         page = self._pages[key]
         if hasattr(page, "on_show"):
             page.on_show()
+
+    def show_audit_results(self) -> None:
+        """Navigate to the audit results page (created at startup, refreshes on show)."""
+        self._active_page = ""
+        self.show_page("audit_results")
 
     def show_gemini_portal(self) -> None:
         """Lazily create and show the Gemini portal page."""
