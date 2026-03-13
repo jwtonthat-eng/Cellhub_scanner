@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any
 import pandas as pd
 
 if TYPE_CHECKING:
-    from core.audit_report import AuditReport
+    pass  # AuditOutput imported lazily inside to_audit_excel
 
 
 class Exporter:
@@ -101,17 +101,18 @@ class Exporter:
         wb.save(str(path))
 
     # ------------------------------------------------------------------
-    # Audit report export
+    # Audit report export  (works with AuditOutput from audit/report/)
     # ------------------------------------------------------------------
 
     @staticmethod
-    def to_audit_excel(report: "AuditReport", path: str | Path) -> None:  # noqa: F821
+    def to_audit_excel(output, path: str | Path) -> None:
         """
-        Export an AuditReport to a multi-sheet Excel workbook:
+        Export an AuditOutput to a multi-sheet Excel workbook:
           Sheet 1 — Executive Summary
-          Sheet 2 — All Findings (line-level detail)
+          Sheet 2 — Line Findings
           Sheet 3 — Risk Flags
           Sheet 4 — Action Plan
+          Sheet 5 — Scope & Limitations
         """
         from openpyxl import Workbook
         from openpyxl.styles import Font, PatternFill, Alignment
@@ -120,129 +121,144 @@ class Exporter:
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         wb = Workbook()
 
-        # Colour palette
-        HDR_FILL   = PatternFill("solid", fgColor="1F4E79")   # dark blue
-        HDR_FONT   = Font(bold=True, color="FFFFFF", size=10)
-        HDR_ALIGN  = Alignment(horizontal="center", vertical="center")
-        TITLE_FONT = Font(bold=True, size=12)
+        HDR_FILL = PatternFill("solid", fgColor="1F4E79")
+        HDR_FONT = Font(bold=True, color="FFFFFF", size=10)
+        HDR_ALIGN = Alignment(horizontal="center", vertical="center")
+        WRAP = Alignment(wrap_text=True, vertical="top")
+        PRIO_COLORS = {
+            "DISCONNECT":      "FEE2E2",
+            "DOWNGRADE":       "FFEDD5",
+            "REMOVE_ADDON":    "EDE9FE",
+            "CARRIER_INQUIRY": "FEF9C3",
+            "REVIEW":          "DBEAFE",
+            "MONITOR":         "DCFCE7",
+        }
         SEV_COLORS = {
-            "high":   "FEE2E2",
-            "medium": "FFEDD5",
-            "low":    "FEF9C3",
-            "info":   "DBEAFE",
+            "high": "FEE2E2", "medium": "FFEDD5",
+            "low":  "FEF9C3", "info":   "DBEAFE",
         }
 
-        def _write_header(ws, columns: list[str], row: int = 1) -> None:
-            for ci, name in enumerate(columns, 1):
-                c = ws.cell(row=row, column=ci, value=name)
-                c.font  = HDR_FONT
-                c.fill  = HDR_FILL
-                c.alignment = HDR_ALIGN
+        def _hdr(ws, cols: list[str]) -> None:
+            for ci, name in enumerate(cols, 1):
+                c = ws.cell(row=1, column=ci, value=name)
+                c.font, c.fill, c.alignment = HDR_FONT, HDR_FILL, HDR_ALIGN
 
         def _autosize(ws) -> None:
             for col in ws.columns:
-                width = max((len(str(cell.value or "")) for cell in col), default=10)
-                ws.column_dimensions[get_column_letter(col[0].column)].width = min(width + 2, 60)
-
-        # ── Sheet 1: Executive Summary ──────────────────────────────────
-        ws1 = wb.active
-        ws1.title = "Executive Summary"
-        es = report.executive_summary
+                w = max((len(str(cell.value or "")) for cell in col), default=10)
+                ws.column_dimensions[get_column_letter(col[0].column)].width = min(w + 2, 60)
 
         def _kv(ws, row: int, key: str, value) -> None:
             kc = ws.cell(row=row, column=1, value=key)
             kc.font = Font(bold=True)
             ws.cell(row=row, column=2, value=value)
 
+        es = output.executive_summary
+
+        # ── Sheet 1: Executive Summary ──────────────────────────────────
+        ws1 = wb.active
+        ws1.title = "Executive Summary"
         ws1.cell(row=1, column=1, value="Telecom Bill Audit — Executive Summary").font = Font(bold=True, size=14)
         ws1.merge_cells("A1:D1")
         r = 3
-        _kv(ws1, r, "Bill Type",              report.bill_type or "Unknown"); r += 1
-        _kv(ws1, r, "Months Analysed",        report.months_analyzed);        r += 1
-        _kv(ws1, r, "Month Labels",           ", ".join(report.month_labels)); r += 1
-        totals = es.get("monthly_totals", [])
-        for i, (lbl, tot) in enumerate(zip(report.month_labels, totals)):
+        _kv(ws1, r, "Bill Type",             es.bill_type or "Unknown"); r += 1
+        _kv(ws1, r, "Months Analysed",       es.months_analyzed);        r += 1
+        _kv(ws1, r, "Month Labels",          ", ".join(es.month_labels)); r += 1
+        for lbl, tot in zip(es.month_labels, es.monthly_totals):
             _kv(ws1, r, f"  {lbl} — Total Spend", f"R{tot:,.2f}"); r += 1
-        _kv(ws1, r, "Average Monthly Spend",        f"R{report.total_monthly_avg:,.2f}"); r += 1
+        _kv(ws1, r, "Average Monthly Spend", f"R{es.avg_monthly_spend:,.2f}"); r += 1
         r += 1
-        _kv(ws1, r, "Total Findings",               es.get("total_findings", len(report.findings))); r += 1
-        _kv(ws1, r, "High-Priority Findings",       es.get("high_priority_findings", 0)); r += 1
-        _kv(ws1, r, "Medium-Priority Findings",     es.get("medium_priority_findings", 0)); r += 1
+        _kv(ws1, r, "Total Lines Analysed",     es.total_lines_analyzed);       r += 1
+        _kv(ws1, r, "Disconnect Candidates",    es.disconnect_candidates);      r += 1
+        _kv(ws1, r, "Downgrade Candidates",     es.downgrade_candidates);       r += 1
+        _kv(ws1, r, "Add-On Removals",          es.addon_removal_candidates);   r += 1
         r += 1
-        _kv(ws1, r, "Est. Monthly Savings Opportunity", f"R{report.total_estimated_monthly_savings:,.2f}"); r += 1
-        _kv(ws1, r, "Est. Annual Savings Opportunity",  f"R{report.total_estimated_annual_savings:,.2f}"); r += 1
+        _kv(ws1, r, "Est. Monthly Savings",  f"R{es.estimated_monthly_savings:,.2f}"); r += 1
+        _kv(ws1, r, "Est. Annual Savings",   f"R{es.estimated_annual_savings:,.2f}");  r += 1
         r += 1
-        _kv(ws1, r, "Export Date", datetime.now().strftime("%Y-%m-%d %H:%M")); r += 1
+        _kv(ws1, r, "High Risk Flags",   es.high_risk_flags);   r += 1
+        _kv(ws1, r, "Medium Risk Flags", es.medium_risk_flags); r += 1
+        r += 1
+        _kv(ws1, r, "Generated", es.generated_at); r += 1
         ws1.column_dimensions["A"].width = 38
         ws1.column_dimensions["B"].width = 28
 
-        # ── Sheet 2: All Findings ───────────────────────────────────────
-        ws2 = wb.create_sheet("All Findings")
-        cols2 = ["Category", "Severity", "Title", "Description",
-                 "Est. Monthly Saving (R)", "Est. Annual Saving (R)", "Affected Lines", "Action"]
-        _write_header(ws2, cols2)
-        for ri, f in enumerate(report.findings, 2):
+        # ── Sheet 2: Line Findings ──────────────────────────────────────
+        ws2 = wb.create_sheet("Line Findings")
+        cols2 = ["MSISDN", "Line Type", "Flag", "Plan", "Avg GB",
+                 "Avg Charge (R)", "Est. Monthly Saving (R)", "Est. Annual Saving (R)",
+                 "Detail", "Action"]
+        _hdr(ws2, cols2)
+        for ri, f in enumerate(output.line_findings, 2):
             row_data = [
-                f.category,
-                f.severity.upper(),
-                f.title,
-                f.description,
-                round(f.estimated_monthly_savings, 2) if f.estimated_monthly_savings else "",
-                round(f.estimated_annual_savings, 2)  if f.estimated_annual_savings  else "",
-                ", ".join(f.affected_lines[:10]),
-                f.action,
+                f.msisdn, f.line_type, f.flag.replace("_", " ").title(),
+                f.plan_name, round(f.avg_usage_gb, 2),
+                round(f.avg_charge, 2),
+                round(f.estimated_monthly_saving, 2) if f.estimated_monthly_saving else "",
+                round(f.estimated_annual_saving, 2)  if f.estimated_annual_saving  else "",
+                f.detail, f.action,
             ]
+            flag_bg = {
+                "zero_use": "FEE2E2", "inactive_eia": "FEE2E2",
+                "low_use": "FFEDD5", "over_provisioned": "FEF9C3",
+                "near_limit": "DBEAFE", "addon": "EDE9FE",
+            }.get(f.flag)
             for ci, val in enumerate(row_data, 1):
                 cell = ws2.cell(row=ri, column=ci, value=val)
-                bg = SEV_COLORS.get(f.severity)
-                if bg:
-                    cell.fill = PatternFill("solid", fgColor=bg)
-                cell.alignment = Alignment(wrap_text=True, vertical="top")
+                if flag_bg:
+                    cell.fill = PatternFill("solid", fgColor=flag_bg)
+                cell.alignment = WRAP
         ws2.freeze_panes = "A2"
-        ws2.row_dimensions[1].height = 20
-        for ri in range(2, len(report.findings) + 2):
-            ws2.row_dimensions[ri].height = 45
         _autosize(ws2)
 
         # ── Sheet 3: Risk Flags ─────────────────────────────────────────
         ws3 = wb.create_sheet("Risk Flags")
-        cols3 = ["Severity", "Category", "Risk", "Description", "Action"]
-        _write_header(ws3, cols3)
-        risk_findings = report.risk_flags
-        if not risk_findings:
-            # Fallback: high + medium findings across all categories
-            risk_findings = [f for f in report.findings if f.severity in ("high", "medium")]
-        for ri, f in enumerate(risk_findings, 2):
-            row_data = [f.severity.upper(), f.category, f.title, f.description, f.action]
+        cols3 = ["Severity", "Flag Type", "Title", "Description",
+                 "Impact (R)", "Months", "Action"]
+        _hdr(ws3, cols3)
+        for ri, f in enumerate(output.risk_flags, 2):
+            row_data = [
+                f.severity.upper(), f.flag_type, f.title, f.description,
+                round(f.delta_rands, 2) if f.delta_rands else "",
+                ", ".join(f.months), f.action,
+            ]
             for ci, val in enumerate(row_data, 1):
                 cell = ws3.cell(row=ri, column=ci, value=val)
                 bg = SEV_COLORS.get(f.severity)
                 if bg:
                     cell.fill = PatternFill("solid", fgColor=bg)
-                cell.alignment = Alignment(wrap_text=True, vertical="top")
+                cell.alignment = WRAP
         ws3.freeze_panes = "A2"
         _autosize(ws3)
 
         # ── Sheet 4: Action Plan ────────────────────────────────────────
         ws4 = wb.create_sheet("Action Plan")
-        cols4 = ["Priority", "Category", "Action", "Est. Monthly Saving (R)", "Affected Lines"]
-        _write_header(ws4, cols4)
-        for ri, item in enumerate(report.action_plan, 2):
+        cols4 = ["Priority", "Category", "MSISDN",
+                 "Action", "Est. Monthly Saving (R)", "Est. Annual Saving (R)"]
+        _hdr(ws4, cols4)
+        for ri, item in enumerate(output.action_plan, 2):
             row_data = [
-                item["priority"],
-                item["category"],
-                item["action"],
-                round(item["estimated_monthly_saving"], 2) if item["estimated_monthly_saving"] else "",
-                item["affected_lines"],
+                item.priority, item.category, item.msisdn, item.description,
+                round(item.estimated_monthly_saving, 2) if item.estimated_monthly_saving else "",
+                round(item.estimated_annual_saving,  2) if item.estimated_annual_saving  else "",
             ]
             for ci, val in enumerate(row_data, 1):
                 cell = ws4.cell(row=ri, column=ci, value=val)
-                sev = item["priority"].lower()
-                bg  = SEV_COLORS.get(sev)
+                bg = PRIO_COLORS.get(item.priority)
                 if bg:
                     cell.fill = PatternFill("solid", fgColor=bg)
-                cell.alignment = Alignment(wrap_text=True, vertical="top")
+                cell.alignment = WRAP
         ws4.freeze_panes = "A2"
         _autosize(ws4)
+
+        # ── Sheet 5: Scope & Limitations ────────────────────────────────
+        ws5 = wb.create_sheet("Scope & Limitations")
+        ws5.cell(row=1, column=1,
+                 value="What This Audit Does Not Claim to Do").font = Font(bold=True, size=12)
+        for ri, lim in enumerate(output.scope_limitations, 3):
+            cell = ws5.cell(row=ri, column=1, value=lim)
+            cell.alignment = Alignment(wrap_text=True, vertical="top")
+            ws5.row_dimensions[ri].height = 30
+        ws5.column_dimensions["A"].width = 100
 
         wb.save(str(path))
